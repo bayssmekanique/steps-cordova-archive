@@ -3,14 +3,13 @@ summary: Archives your Cordova project
 description: |-
   Archives your Cordova project.
 
-  For first the step prepare your Cordova project by calling:
+  First, the step prepares your Cordova project by calling:
 
-  - `cordova "platform" "rm" "<platform>"`
-  - `cordova "platform" "add" "<platform>"`
+  - `cordova "prepare" "<platform>"`
 
-  then it archives the project by calling:
+  Then it archives the project by calling:
 
-  - `cordova "build" "--debug|--release" "--device|--emulator" "<platform>" "--buildConfig=$BITRISE_CORDOVA_BUILD_CONFIGURATION"`
+  - `cordova "compile" "--debug|--release" "--device|--emulator" "<platform>" "--buildConfig=$BITRISE_CORDOVA_BUILD_CONFIGURATION"`
 website: https://github.com/bitrise-community/steps-cordova-archive
 source_code_url: https://github.com/bitrise-community/steps-cordova-archive
 support_url: https://github.com/bitrise-community/steps-cordova-archive/issues
@@ -30,7 +29,7 @@ inputs:
     opts:
       title: "Platform to use in cordova-cli commands"
       description: |-
-        Specify this input to apply cordova-cli commands to desired platforms only.
+        Specify this input to apply cordova-cli commands to the desired platforms only.
 
         `cordova build [OTHER_PARAMS] <platform>`
 
@@ -63,16 +62,17 @@ inputs:
       is_required: true
   - build_config: $BITRISE_CORDOVA_BUILD_CONFIGURATION
     opts:
-      title: "Build configuration path, to describe code signing properties"
+      title: "Build configuration path to describe code signing properties"
       description: |-
         Path to the build configuration file (build.json), which describes code signing properties.
-  - readd_platform: "true"
+  - run_cordova_prepare: "true"
     opts:
-      title: "Should remove platforms as prepare step?"
+      title: "Should `cordova prepare` be executed before `cordova compile`?"
       description: |-
-        Specify whether to remove platforms and then re-add (overwrites some config.xml values).
+        Should be left at the default (true) value, except if the cordova-prepare step is used.
 
-        `cordova platform rm <platform>`
+        - true: `cordova prepare <platform>` followed by `cordova compile <platform>`
+        - false: `cordova compile <platform>`
       value_options:
       - "true"
       - "false"
@@ -83,8 +83,8 @@ inputs:
       description: |-
         The version of cordova you want to use.
 
-        If value is set to `latest`, the step will update to the latest cordova version.
-        Leave this input empty to use the preinstalled cordova version.
+        If the value is set to `latest`, the step will update to the latest cordova version.
+        Leave this input field empty to use the preinstalled cordova version.
   - workdir: $BITRISE_SOURCE_DIR
     opts:
       title: "Working directory"
@@ -92,11 +92,14 @@ inputs:
       description: |-
         Root directory of your Cordova project, where your Cordova config.xml exists.
       is_required: true
-  - options:
+  - options: --buildFlag="-UseModernBuildSystem=0"
     opts:
       title: "Options to append to the cordova-cli build command"
       description: |-
         Use this input to specify custom options, to append to the end of the cordova-cli build command.
+
+        Cordova does not yet support the new build system made default in XCode 10 (https://github.com/apache/cordova-ios/issues/407).
+        To use the legacy build system add `--buildFlag="-UseModernBuildSystem=0"` to the options string.
 
         Example:
         - `--browserify`
